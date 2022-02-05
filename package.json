@@ -1,0 +1,29 @@
+{
+  "name": "discord-annoy-o-bot",
+  "version": "1.0.0",
+  "description": "For that one guy that just makes your blood boil.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Daglesia/discord-annoy-o-bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Daglesia/discord-annoy-o-bot/issues"
+  },
+  "homepage": "https://github.com/Daglesia/discord-annoy-o-bot#readme",
+  "devDependencies": {
+    "eslint": "^8.8.0"
+  },
+  "dependencies": {
+    "discord.js": "^13.6.0",
+    "dotenv": "^16.0.0",
+    "json2csv": "^5.0.6",
+    "minimist": "^1.2.5"
+  }
+}

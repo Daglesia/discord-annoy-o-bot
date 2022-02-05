@@ -1,0 +1,10 @@
+{
+	"token": "your-bot-token",
+    "black_list": ["1111111111111111"],
+    "path_to_log_directory": "./logged_data",
+    "kick_from_voicechat": {
+        "enabled": true,
+        "delay_from_login_in_minutes": 25,
+        "consecutive_activations_in_minutes": 10
+    }
+}
