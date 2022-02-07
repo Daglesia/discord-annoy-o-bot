@@ -3,8 +3,15 @@ const fs = require('fs');
 
 const { path_to_log_directory } = require('../config.json');
 
-
 const isPersonJoiningChannel = (oldState, newState, personIdList) => personIdList.includes(newState.member.user.id) && !oldState.channel && oldState.channel !== newState.channel;
+
+const isPersonLeavingChannel = (oldState, newState, personIdList) => personIdList.includes(newState.member.user.id) && oldState.channel && !newState.channel && oldState.channel !== newState.channel;
+
+const hasPersonMutedThemself = (oldState, newState, personIdList) => personIdList.includes(newState.member.user.id) && !oldState.mute && newState.mute;
+
+const hasPersonUnmutedThemself = (oldState, newState, personIdList) => personIdList.includes(newState.member.user.id) && oldState.mute && !newState.mute;
+
+const isPersonNotLeavingChannel = (oldState, newState, personIdList) => personIdList.includes(newState.member.user.id) && !(oldState.channel && !newState.channel && oldState.channel !== newState.channel);
 
 const makeNameSaveFriendly = (nameString) => nameString.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(" ", "_").toLowerCase();
 
@@ -35,5 +42,9 @@ function saveCsvData(data, fileName) {
 
 module.exports = {
     isPersonJoiningChannel,
+    isPersonLeavingChannel,
+    isPersonNotLeavingChannel,
+    hasPersonMutedThemself,
+    hasPersonUnmutedThemself,
     saveCsvData,
 }

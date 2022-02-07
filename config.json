@@ -1,10 +1,33 @@
 {
-	"token": "your-bot-token",
-    "black_list": ["1111111111111111"],
+	"token": "your-token",
+    "traced_tags": ["23123124124214124214124"],
     "path_to_log_directory": "./logged_data",
     "kick_from_voicechat": {
-        "enabled": true,
-        "delay_from_login_in_minutes": 25,
-        "consecutive_activations_in_minutes": 10
+        "delay_from_login_in_milliseconds": {
+            "minimum": 30000,
+            "maximum": 40000
+        }
+    },
+    "mute_for_duration": {
+        "delay_from_login_in_milliseconds": {
+            "minimum": 6000,
+            "maximum": 8000
+        },
+        "delay_from_last_in_milliseconds": {
+            "minimum": 1000,
+            "maximum": 4000
+        },
+        "duration_in_milliseconds": {
+            "minimum": 1000,
+            "maximum": 4000
+        },
+        "consecutive_retries": {
+            "minimum": 0,
+            "maximum": 3
+        },
+        "delay_from_last_retry_in_milliseconds": {
+            "minimum": 300,
+            "maximum": 600
+        }
     }
 }

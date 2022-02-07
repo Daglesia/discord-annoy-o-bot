@@ -1,18 +1,24 @@
 const conf = require('minimist')(process.argv.slice(2));
-const { Client, Intents } = require('discord.js');
+const { Client } = require('discord.js');
 
-const { token, black_list } = require('./config.json');
+const { token } = require('./config.json');
 const annoyers = require('./utils/annoyers');
 const helpers = require('./utils/helper-functions');
-const intents = require('./utils/intents');
+const { intents, ANNOYERS } = require('./utils/constants');
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MEMBERS] });
+const User = require('./utils/user-class');
+const BlackList = require('./utils/black-list-class');
+
+const blackList = new BlackList();
+const client = new Client({ intents: intents() });
+let listOfVictims = [];
 
 client.once('ready', async () => {
+    await blackList.initializeBlackList(client);
+
 	if(conf.watch) {
-        const guilds = client.guilds.cache.map(server => client.guilds.cache.get(server.id));
-        const userData = await Promise.all(guilds.map(async guild => {
-            const logData = {
+        const userData = await Promise.all(guilds.map(async guild => (
+            {
                 serverName: guild.name,
                 users: (await guild.members.fetch()).map(user => 
                     ({
@@ -21,9 +27,8 @@ client.once('ready', async () => {
                         id: user.id,
                 }))
             }
-            return logData;
-        }));
-        userData.forEach(async server => {
+        )));
+        userData.forEach(server => {
             helpers.saveCsvData(server.users, server.serverName);
         });
         console.log('Saved data of users successfully.')
@@ -31,11 +36,45 @@ client.once('ready', async () => {
 });
 
 client.on('voiceStateUpdate', (oldState, newState) => {
-    if(helpers.isPersonJoiningChannel(oldState, newState, black_list)) {
-        //newState.member.voice.disconnect();
-        annoyers.startKickFromVoiceChatRoutine(newState);
+    //case: person on list not leaving channel
+    if(helpers.isPersonNotLeavingChannel(oldState, newState, blackList.tags) && !listOfVictims.find(user => user.id === newState.member.user.id)) {
+        listOfVictims.push(new User(newState.member.user.id, newState.member.user.tag, newState.mute));
+    };
+    if(helpers.isPersonJoiningChannel(oldState, newState, blackList.tags)) {
+        console.log(`User ${newState.member.user.tag} joined the voice chat.`)
+        const user = listOfVictims.find(user => user.id === newState.member.user.id);
+        if(!user.locks.find(lock => lock === ANNOYERS.KICK)) {
+            annoyers.startKickFromVoiceChat(newState, user);
+        }
+        if(!user.locks.find(lock => lock === ANNOYERS.MUTE)) {
+            annoyers.muteUserInVoiceChatRoutine(newState, user);
+        }
     }
-    console.log(newState.member.user.id);
+    if(helpers.isPersonLeavingChannel(oldState, newState, blackList.tags)) {
+        console.log(`User ${newState.member.user.tag} left the voice chat.`);
+        const user = listOfVictims.find(user => user.id === newState.member.user.id);
+        if(user) {
+            user.isOnVoiceChat = false;
+            listOfVictims = listOfVictims.filter(user => {
+                //todo refactor, but simple filtering doesnt work
+                if(user.id !== newState.member.user.id) {
+                    return user;
+                }
+            });
+        }
+    }
+
+    //todo see if i need it
+    if(helpers.hasPersonMutedThemself(oldState, newState, blackList.tags)) {
+        console.log(`User ${newState.member.user.tag} muted.`);
+        listOfVictims.find(user => user.id === newState.member.user.id).isMuted = true;
+    }
+    if(helpers.hasPersonUnmutedThemself(oldState, newState, blackList.tags)) {
+        console.log(`User ${newState.member.user.tag} unmuted.`);
+        listOfVictims.find(user => user.id === newState.member.user.id).isMuted = false;
+    }
+
+    console.log(listOfVictims);
 })
 
 client.login(token);

@@ -1,4 +1,4 @@
-run:
+run_test:
 	node index.js
 
 spy_on:
