@@ -2,7 +2,7 @@ const conf = require('minimist')(process.argv.slice(2));
 const { Client } = require('discord.js');
 
 const { token } = require('./config.json');
-const annoyers = require('./utils/annoyers');
+const { annoyersMapping } = require('./utils/annoyers');
 const helpers = require('./utils/helper-functions');
 const { intents, ANNOYERS } = require('./utils/constants');
 
@@ -36,18 +36,20 @@ client.once('ready', async () => {
 });
 
 client.on('voiceStateUpdate', (oldState, newState) => {
-    //case: person on list not leaving channel
     if(helpers.isPersonNotLeavingChannel(oldState, newState, blackList.tags) && !listOfVictims.find(user => user.id === newState.member.user.id)) {
         listOfVictims.push(new User(newState.member.user.id, newState.member.user.tag, newState.mute));
     };
     if(helpers.isPersonJoiningChannel(oldState, newState, blackList.tags)) {
+        newState.member.voice.setMute(false);
+        newState.member.voice.setDeaf(false);
         console.log(`User ${newState.member.user.tag} joined the voice chat.`)
         const user = listOfVictims.find(user => user.id === newState.member.user.id);
-        if(!user.locks.find(lock => lock === ANNOYERS.KICK)) {
-            annoyers.startKickFromVoiceChat(newState, user);
-        }
-        if(!user.locks.find(lock => lock === ANNOYERS.MUTE)) {
-            annoyers.muteUserInVoiceChatRoutine(newState, user);
+        if(!user.locks.length) {
+            Object.keys(conf).map(option => {
+                if (annoyersMapping[option]) {
+                    annoyersMapping[option](newState, user);
+                }
+            })
         }
     }
     if(helpers.isPersonLeavingChannel(oldState, newState, blackList.tags)) {
@@ -73,8 +75,6 @@ client.on('voiceStateUpdate', (oldState, newState) => {
         console.log(`User ${newState.member.user.tag} unmuted.`);
         listOfVictims.find(user => user.id === newState.member.user.id).isMuted = false;
     }
-
-    console.log(listOfVictims);
 })
 
 client.login(token);

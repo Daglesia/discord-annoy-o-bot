@@ -1,4 +1,4 @@
-const { kick_from_voicechat, mute_for_duration } = require('../config.json');
+const { kick_from_voicechat, mute_for_duration, deafen_for_duration } = require('../config.json');
 const { ANNOYERS } = require('./constants');
 
 const delay = milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds));
@@ -12,7 +12,8 @@ async function startKickFromVoiceChat(state, user) {
 
     await delayForRandomTime(kick_from_voicechat.delay_from_login_in_milliseconds);
     if (user.isOnVoiceChat) {
-        state.member.voice.setMute(false);
+        await state.member.voice.setMute(false);
+        await newState.member.voice.setDeaf(false);
         state.member.voice.disconnect();
         console.log(`User ${user.nickname} successfully disconnected.`);
     }
@@ -53,7 +54,40 @@ async function muteUserInVoiceChatRoutine(state, user) {
     user.removeLock(ANNOYERS.MUTE);
 }
 
-module.exports = {
-    startKickFromVoiceChat,
-    muteUserInVoiceChatRoutine,
+async function deafenUserInVoiceChat(state, user) {
+    if (user.isOnVoiceChat) {
+        state.member.voice.setDeaf(true);
+        console.log(`User ${user.nickname} deafened forcefully.`);
+    }
+    await delayForRandomTime(deafen_for_duration.duration_in_milliseconds);
+    if (user.isOnVoiceChat) {
+        state.member.voice.setDeaf(false);
+        console.log(`User ${user.nickname} undeafened forcefully.`);
+    }
 }
+
+async function deafenUserInVoiceChatRoutine(state, user) {
+    user.addLock(ANNOYERS.DEAFEN);
+
+    await delayForRandomTime(deafen_for_duration.delay_from_login_in_milliseconds);
+
+    while(user.isOnVoiceChat) {
+        const retries = deafen_for_duration.consecutive_retries;
+
+        for(let i = 0; i < getRandomInt(retries.minimum, retries.maximum); i++) {
+            await deafenUserInVoiceChat(state, user);
+            delayForRandomTime(deafen_for_duration.delay_from_last_retry_in_milliseconds);
+        }
+        delayForRandomTime(deafen_for_duration.delay_from_last_in_milliseconds);
+    }
+
+    user.removeLock(ANNOYERS.DEAFEN);
+}
+
+const annoyersMapping = {
+    kick: startKickFromVoiceChat,
+    mute: muteUserInVoiceChatRoutine,
+    deafen: deafenUserInVoiceChatRoutine,
+}
+
+module.exports = {annoyersMapping};

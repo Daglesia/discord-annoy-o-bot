@@ -1,29 +1,51 @@
 {
 	"token": "your-token",
-    "traced_tags": ["23123124124214124214124"],
+    "traced_tags": ["1"],
     "path_to_log_directory": "./logged_data",
     "kick_from_voicechat": {
         "delay_from_login_in_milliseconds": {
-            "minimum": 30000,
-            "maximum": 40000
+            "minimum": 7200000,
+            "maximum": 1080000
         }
     },
     "mute_for_duration": {
         "delay_from_login_in_milliseconds": {
-            "minimum": 6000,
-            "maximum": 8000
+            "minimum": 3600000,
+            "maximum": 5000000
         },
         "delay_from_last_in_milliseconds": {
-            "minimum": 1000,
-            "maximum": 4000
+            "minimum": 1000000,
+            "maximum": 4000000
         },
         "duration_in_milliseconds": {
-            "minimum": 1000,
-            "maximum": 4000
+            "minimum": 100,
+            "maximum": 400
         },
         "consecutive_retries": {
             "minimum": 0,
-            "maximum": 3
+            "maximum": 1
+        },
+        "delay_from_last_retry_in_milliseconds": {
+            "minimum": 300,
+            "maximum": 600
+        }
+    },
+    "deafen_for_duration": {
+        "delay_from_login_in_milliseconds": {
+            "minimum": 3600000,
+            "maximum": 5000000
+        },
+        "delay_from_last_in_milliseconds": {
+            "minimum": 1000000,
+            "maximum": 4000000
+        },
+        "duration_in_milliseconds": {
+            "minimum": 100,
+            "maximum": 400
+        },
+        "consecutive_retries": {
+            "minimum": 0,
+            "maximum": 1
         },
         "delay_from_last_retry_in_milliseconds": {
             "minimum": 300,

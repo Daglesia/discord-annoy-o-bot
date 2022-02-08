@@ -6,6 +6,7 @@ const intents = () => [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES, I
 const ANNOYERS = {
     KICK: 'kick',
     MUTE: 'mute',
+    DEAFEN: 'deaf',
 }
 
 module.exports = { intents, ANNOYERS };
